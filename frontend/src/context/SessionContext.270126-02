@@ -1,0 +1,106 @@
+"use client";
+
+import { createContext, useContext, useEffect, useState } from "react";
+
+type Session = {
+  full_name: string;
+  role: string;
+  language: "EN" | "FR";
+  showroom: {
+    id: string;
+    name: string;
+    address?: string | null;
+    logo_url?: string | null;
+    currency_code?: string | null;
+  } | null;
+};
+
+type SessionContextType = {
+  session: Session | null;
+  setSession: (session: Session | null) => void;
+
+  activeShowroomId: string | null;
+  setActiveShowroomId: (id: string | null) => void;
+
+  // maxDiscountPercent?: number | null;
+
+  loadingSession: boolean;
+};
+
+const SessionContext = createContext<SessionContextType | null>(null);
+
+export function SessionProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSessionState] = useState<Session | null>(null);
+  const [activeShowroomId, setActiveShowroomIdState] = useState<string | null>(null);
+  const [loadingSession, setLoadingSession] = useState(true);
+
+  useEffect(() => {
+    try {
+      const storedSession = localStorage.getItem("loggedUser");
+      const storedShowroom = localStorage.getItem("activeShowroomId");
+
+      if (storedSession) {
+        const parsed: Session = JSON.parse(storedSession);
+        setSessionState(parsed);
+
+        if (parsed.role === "manager" && parsed.showroom?.id) {
+          setActiveShowroomIdState(parsed.showroom.id);
+        } else if (storedShowroom) {
+          setActiveShowroomIdState(storedShowroom);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load session", e);
+    } finally {
+      setLoadingSession(false);
+    }
+  }, []);
+
+  const setSession = (session: Session | null) => {
+    if (session) {
+      localStorage.setItem("loggedUser", JSON.stringify(session));
+
+      if (session.role === "manager" && session.showroom?.id) {
+        localStorage.setItem("activeShowroomId", session.showroom.id);
+        setActiveShowroomIdState(session.showroom.id);
+      }
+    } else {
+      localStorage.removeItem("loggedUser");
+      localStorage.removeItem("activeShowroomId");
+      setActiveShowroomIdState(null);
+    }
+
+    setSessionState(session);
+  };
+
+  const setActiveShowroomId = (id: string | null) => {
+    if (id) {
+      localStorage.setItem("activeShowroomId", id);
+    } else {
+      localStorage.removeItem("activeShowroomId");
+    }
+    setActiveShowroomIdState(id);
+  };
+
+  return (
+    <SessionContext.Provider
+      value={{
+        session,
+        setSession,
+        activeShowroomId,
+        setActiveShowroomId,
+        loadingSession,
+      }}
+    >
+      {children}
+    </SessionContext.Provider>
+  );
+}
+
+export function useSession() {
+  const ctx = useContext(SessionContext);
+  if (!ctx) {
+    throw new Error("useSession must be used inside SessionProvider");
+  }
+  return ctx;
+}

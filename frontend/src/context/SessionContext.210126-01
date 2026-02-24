@@ -1,0 +1,58 @@
+"use client";
+
+import { createContext, useContext, useEffect, useState } from "react";
+
+type Session = {
+  full_name: string;
+  role: string;
+  language: "EN" | "FR";
+  showroom: {
+    id: string;
+    name: string;
+  } | null;
+};
+
+type SessionContextType = {
+  session: Session | null;
+  setSession: (session: Session | null) => void;
+};
+
+const SessionContext = createContext<SessionContextType | null>(null);
+
+export function SessionProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSessionState] = useState<Session | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("loggedUser");
+      if (stored) {
+        setSessionState(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to load session", e);
+    }
+  }, []);
+
+  const setSession = (session: Session | null) => {
+    if (session) {
+      localStorage.setItem("loggedUser", JSON.stringify(session));
+    } else {
+      localStorage.removeItem("loggedUser");
+    }
+    setSessionState(session);
+  };
+
+  return (
+    <SessionContext.Provider value={{ session, setSession }}>
+      {children}
+    </SessionContext.Provider>
+  );
+}
+
+export function useSession() {
+  const ctx = useContext(SessionContext);
+  if (!ctx) {
+    throw new Error("useSession must be used inside SessionProvider");
+  }
+  return ctx;
+}
