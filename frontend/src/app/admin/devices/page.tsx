@@ -27,8 +27,17 @@ interface DeviceRow {
   first_seen_at: string;
   active: boolean;
   awaiting_approval: boolean;
-  showroom?: { id: string; name: string };
-  requester?: { id: string; full_name: string; username: string };
+
+  showroom?: { 
+    id: string; 
+    name: string; 
+  }[];
+
+  requester?: { 
+    id: string; 
+    full_name: string; 
+    username: string; 
+  }[];
 }
 
 export default function DeviceAuthAdminPage() {
@@ -332,14 +341,20 @@ async function updateDeviceField(
                     <tr key={d.id} className="border-b border-gray-700/50 hover:bg-gray-800/50 transition-colors">
                       <td className="p-6">
                         <div>
-                          <p className="text-white font-medium">{d.requester?.full_name || t.devices.ui.unknown}</p>
-                          <p className="text-gray-400 text-sm">{d.requester?.username}</p>
+                          <p className="text-white font-medium">
+                            {d.requester?.[0]?.full_name || t.devices.ui.unknown}
+                          </p>
+                          <p className="text-gray-400 text-sm">
+                            {d.requester?.[0]?.username}
+                          </p>
                         </div>
                       </td>
                       
                       <td className="p-6">
                         <div className="bg-gray-800/50 rounded-lg px-3 py-2">
-                          <p className="text-white">{d.showroom?.name || t.devices.table.noShowroom}</p>
+                          <p className="text-white">
+                            {d.showroom?.[0]?.name || t.devices.table.noShowroom}
+                          </p>
                         </div>
                       </td>
                       
@@ -409,7 +424,7 @@ async function updateDeviceField(
                             <button
                               onClick={async () => {
                                 if (!confirm(t.devices.messages.confirmReplace)) return;
-                                await replaceDevice(d.id, d.showroom?.id ?? "");
+                                await replaceDevice(d.id, d.showroom?.[0]?.id ?? "");
                                 loadDevices();
                               }}
                               className="flex items-center gap-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium"
