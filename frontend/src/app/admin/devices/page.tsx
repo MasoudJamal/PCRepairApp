@@ -28,16 +28,16 @@ interface DeviceRow {
   active: boolean;
   awaiting_approval: boolean;
 
-  showroom?: { 
+  showroom: { 
     id: string; 
     name: string; 
-  }[];
+  } | null;
 
-  requester?: { 
+  requester: { 
     id: string; 
     full_name: string; 
     username: string; 
-  }[];
+  } | null;
 }
 
 export default function DeviceAuthAdminPage() {
@@ -86,7 +86,15 @@ export default function DeviceAuthAdminPage() {
       if (error) {
         console.error("Supabase query error:", error);
       } else {
-        setDevices(data ?? []);
+        // Normalize Supabase data
+        const normalized: DeviceRow[] = (data ?? []).map((row: any) => ({
+          ...row,
+          showroom: row.showroom?.[0] ?? null,   // Take first element or null
+          requester: row.requester?.[0] ?? null, // Take first element or null
+        }));
+
+        // Update state with normalized data
+        setDevices(normalized);
       }
     } catch (e) {
       console.error("Unexpected error fetching devices:", e);
@@ -342,10 +350,10 @@ async function updateDeviceField(
                       <td className="p-6">
                         <div>
                           <p className="text-white font-medium">
-                            {d.requester?.[0]?.full_name || t.devices.ui.unknown}
+                            {d.requester?.full_name || t.devices.ui.unknown}
                           </p>
                           <p className="text-gray-400 text-sm">
-                            {d.requester?.[0]?.username}
+                            {d.requester?.username}
                           </p>
                         </div>
                       </td>
@@ -353,7 +361,7 @@ async function updateDeviceField(
                       <td className="p-6">
                         <div className="bg-gray-800/50 rounded-lg px-3 py-2">
                           <p className="text-white">
-                            {d.showroom?.[0]?.name || t.devices.table.noShowroom}
+                            {d.showroom?.name || t.devices.table.noShowroom}
                           </p>
                         </div>
                       </td>
@@ -424,7 +432,7 @@ async function updateDeviceField(
                             <button
                               onClick={async () => {
                                 if (!confirm(t.devices.messages.confirmReplace)) return;
-                                await replaceDevice(d.id, d.showroom?.[0]?.id ?? "");
+                                await replaceDevice(d.id, d.showroom?.id ?? "");
                                 loadDevices();
                               }}
                               className="flex items-center gap-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium"
