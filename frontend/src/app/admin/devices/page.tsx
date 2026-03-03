@@ -28,16 +28,8 @@ interface DeviceRow {
   active: boolean;
   awaiting_approval: boolean;
 
-  showroom: { 
-    id: string; 
-    name: string; 
-  } | null;
-
-  requester: { 
-    id: string; 
-    full_name: string; 
-    username: string; 
-  } | null;
+ showroom: any;
+  requester: any;
 }
 
 export default function DeviceAuthAdminPage() {
