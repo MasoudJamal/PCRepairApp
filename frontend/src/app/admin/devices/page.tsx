@@ -1,3 +1,4 @@
+const ERROR_TEST = ;
 "use client";
 
 import { useEffect, useState } from "react";
