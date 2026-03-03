@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+frontend/node_modules/
+
+# next build
+.next/
+frontend/.next/
+out/
+
+# environment files
+.env
+.env.local
+.env.production
+frontend/.env.local
+
+# supabase local
+supabase/.temp
+supabase/.branches
+supabase/.cache
+
+# binaries
+*.exe
+
+# Ignore backup and temp files
+WasteBasket/
+storage_backup/
+*.dump
+*.sql
+supabase/
+.vscode/

@@ -1,0 +1,47 @@
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+    setError("");
+
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select(`
+        id,
+        username,
+        password_hash,
+        full_name,
+        role,
+        language,
+        active,
+        showroom:showrooms (
+          id,
+          name
+        )
+      `)
+     .eq("username", username)
+     .single();
+
+    if (userError || !user) {
+      setError(t[lang].invalid);
+      return;
+    }
+
+    if (!user.active) {
+      setError(lang === "en" ? "Account disabled." : "Compte désactivé.");
+      return;
+    }
+
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) {
+      setError(t[lang].invalid);
+      return;
+    }
+
+    const session = {
+      full_name: user.full_name,
+      role: user.role,
+      language: lang === "fr" ? "FR" : "EN",
+      showroom: {
+        id: user.showroom.id,
+        name: user.showroom.name,
+      },
+    };

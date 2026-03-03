@@ -1,0 +1,55 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+import TopNav from "../components/TopNav";
+import { SessionProvider } from "../context/SessionContext";
+
+// export default function RootLayout({ children }: { //children: React.ReactNode }) {
+//  return (
+//    <html lang="en">
+//      <body>
+//        <SessionProvider>
+//          <TopNav />
+//          <div style={{ paddingTop: 70 }}>
+//            {children}
+//          </div>
+//        </SessionProvider>
+//      </body>
+//    </html>
+//  );
+//}
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Touch of Tek Repairs",
+  description: "PC Repair Shop Management System",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <SessionProvider>
+          <TopNav />
+          <div style={{ paddingTop: 70 }}>
+            {children}
+          </div>
+        </SessionProvider>
+      </body>
+    </html>
+  );
+}
