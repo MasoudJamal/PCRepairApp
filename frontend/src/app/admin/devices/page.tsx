@@ -1,4 +1,3 @@
-const ERROR_TEST = ;
 "use client";
 
 import { useEffect, useState } from "react";
@@ -29,8 +28,16 @@ interface DeviceRow {
   active: boolean;
   awaiting_approval: boolean;
 
- showroom: any;
-  requester: any;
+  showroom: { 
+    id: string; 
+    name: string; 
+  } | null;
+
+  requester: { 
+    id: string; 
+    full_name: string; 
+    username: string; 
+  } | null;
 }
 
 export default function DeviceAuthAdminPage() {
