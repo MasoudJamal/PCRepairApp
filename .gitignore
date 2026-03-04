@@ -26,5 +26,4 @@ WasteBasket/
 storage_backup/
 *.dump
 *.sql
-supabase/
 .vscode/
