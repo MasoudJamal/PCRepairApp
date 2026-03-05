@@ -44,6 +44,7 @@ export default function CreateShowroomPage() {
     name: "",
     address: "",
     phone: "",
+	whatsapp_number: "",
     markup_percent: 15,
     currency_code: "TND",
     active: true,
@@ -55,6 +56,8 @@ export default function CreateShowroomPage() {
     legal_line_3: "",
     default_tax_percent: 19,
     tax_stamp_amount: 1.000,
+	last_serial_number: 0,
+	current_serial_year: new Date().getFullYear(),
   });
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -173,10 +176,20 @@ export default function CreateShowroomPage() {
                   <label className="block text-sm font-medium text-gray-400 mb-1">{t.showrooms.phone}</label>
                   <input className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
                 </div>
+				{/* NEW WHATSAPP FIELD */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">WhatsApp Number</label>
+                  <input className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.whatsapp_number} onChange={e => setForm({...form, whatsapp_number: e.target.value})} />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">{t.showrooms.address}</label>
                   <input className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
                 </div>
+				{/* NEW READ-ONLY SERIAL YEAR */}
+                <div>
+                   <label className="block text-sm font-medium text-gray-400 mb-1">Current Serial Year</label>
+                   <input disabled className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-gray-500 cursor-not-allowed" value={form.current_serial_year} />
+                 </div>
               </div>
             </div>
 
