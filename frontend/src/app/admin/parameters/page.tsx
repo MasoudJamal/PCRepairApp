@@ -10,7 +10,8 @@ import {
   ShieldCheck, 
   Wrench, 
   ChevronRight,
-  PackageSearch
+  PackageSearch,
+  Settings
 } from "lucide-react";
 
 export default function ParametersMenu() {
@@ -60,6 +61,14 @@ export default function ParametersMenu() {
       icon: <PackageSearch className="w-6 h-6 text-purple-500" />,
       color: "border-purple-500/20 hover:border-purple-500/50 hover:bg-purple-500/5",
       accent: "bg-purple-500/10"
+    },
+	{
+      title: lang === 'fr' ? "Paramètres Généraux" : "General Settings",
+      desc: lang === 'fr' ? "Nom de l'entreprise, logo, et URLs" : "Company name, logo, and URLs",
+      path: "/admin/parameters/settings", 
+      icon: <Settings className="w-6 h-6 text-pink-500" />,
+      color: "border-pink-500/20 hover:border-pink-500/50 hover:bg-pink-500/5",
+      accent: "bg-pink-500/10"
     }
   ];
 
