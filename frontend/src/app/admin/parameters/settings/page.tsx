@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useSession } from "@/context/SessionContext";
 import { ArrowLeft, Save, Globe, Mail, Building, Link as LinkIcon, Loader2, Camera, Upload } from "lucide-react";
 
