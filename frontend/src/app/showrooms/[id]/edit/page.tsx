@@ -60,6 +60,7 @@ export default function EditShowroomPage() {
     name: "",
     address: "",
     phone: "",
+	whatsapp_number: "", // Added
     markup_percent: 15,
     currency_code: "TND",
     active: true,
@@ -73,6 +74,8 @@ export default function EditShowroomPage() {
     legal_line_3: "",
     default_tax_percent: 19,
     tax_stamp_amount: 1.000,
+	last_serial_number: 0, // Added
+	current_serial_year: new Date().getFullYear(), // Added
   });
 
   /* UI STATE */
@@ -119,6 +122,7 @@ export default function EditShowroomPage() {
           name: data.name ?? "",
           address: data.address ?? "",
           phone: data.phone ?? "",
+		  whatsapp_number: data.whatsapp_number ?? "", // Added
           notes: data.notes ?? "",
           legal_line_1: data.legal_line_1 ?? "",
           legal_line_2: data.legal_line_2 ?? "",
@@ -128,6 +132,8 @@ export default function EditShowroomPage() {
           markup_percent: data.markup_percent ?? 0,
           default_tax_percent: data.default_tax_percent ?? 19,
           tax_stamp_amount: data.tax_stamp_amount ?? 1.000,
+		  last_serial_number: data.last_serial_number ?? 0, // Added
+		  current_serial_year: data.current_serial_year ?? new Date().getFullYear(), // Added
         });
 
         if (data.logo_url) setLogoPreview(data.logo_url);
@@ -260,10 +266,29 @@ export default function EditShowroomPage() {
                   <label className="block text-sm font-medium text-gray-400 mb-1">{t.showrooms.phone}</label>
                   <input className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
                 </div>
+				
+				{/* WhatsApp Field */}
+				<div>
+					<label className="block text-sm font-medium text-gray-400 mb-1">WhatsApp {lang === "fr" ? "(Numéro)" : "(Number)"}</label>
+					<input className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.whatsapp_number} onChange={e => setForm({...form, whatsapp_number: e.target.value})} />
+				</div>
+				
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">{t.showrooms.address}</label>
                   <input className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
                 </div>
+				{/* Serial Number Field */}
+				<div>
+					<label className="block text-sm font-medium text-gray-400 mb-1">{lang === "fr" ? "Dernier N° Séquentiel" : "Last Serial Number"}</label>
+					<input type="number" className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.last_serial_number} onChange={e => setForm({...form, last_serial_number: Number(e.target.value)})} />
+				</div>
+
+				{/* Serial Year - Read Only */}
+				<div>
+					<label className="block text-sm font-medium text-gray-400 mb-1">{lang === "fr" ? "Année de Série" : "Serial Year"}</label>
+					<input disabled className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-gray-500 cursor-not-allowed" value={form.current_serial_year} />
+				</div>
+				
               </div>
             </div>
 
