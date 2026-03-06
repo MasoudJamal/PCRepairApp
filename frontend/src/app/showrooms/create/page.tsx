@@ -172,6 +172,23 @@ export default function CreateShowroomPage() {
                   <label className="block text-sm font-medium text-gray-400 mb-1">{t.showrooms.name}*</label>
                   <input className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
                 </div>
+				
+				{/* Last Serial Number */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    {lang === "fr" ? "Dernier N° Séquentiel" : "Last Serial Number"}
+                  </label>
+                  <input 
+                    type="number"
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" 
+                    value={form.last_serial_number} 
+                    onChange={e => setForm({...form, last_serial_number: Number(e.target.value)})} 
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1 italic">
+                    {lang === "fr" ? "Généralement 0 pour un nouveau showroom" : "Usually 0 for a new showroom"}
+                  </p>
+                </div>
+				
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">{t.showrooms.phone}</label>
                   <input className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
