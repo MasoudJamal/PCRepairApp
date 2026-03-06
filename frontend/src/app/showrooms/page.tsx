@@ -18,6 +18,7 @@ import {
   Search,
   ChevronRight,
   AlertCircle,
+  Trash2,
   X
 } from "lucide-react";
 
@@ -216,6 +217,28 @@ export default function ShowroomsPage() {
   }
 };
 
+/* 🗑️ DELETE SHOWROOM FUNCTION */
+  const handleDelete = async (id: string, name: string) => {
+    const confirmMsg = lang === "fr" 
+      ? `Êtes-vous sûr de vouloir supprimer "${name}" ? Cette action est irréversible.` 
+      : `Are you sure you want to delete "${name}"? This action cannot be undone.`;
+      
+    if (!window.confirm(confirmMsg)) return;
+
+    const { error } = await supabase
+      .from("showrooms")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      alert(lang === "fr" ? "Erreur lors de la suppression" : "Error deleting showroom");
+    } else {
+      // This removes the item from the screen immediately
+      setShowrooms(showrooms.filter(s => s.id !== id));
+    }
+  };
+
+
   return (
     <div style={pageStyle}>
       {/* Header */}
@@ -371,23 +394,41 @@ export default function ShowroomsPage() {
             <div style={showroomsGridStyle}>
               {filteredShowrooms.map((showroom) => (
                 <div key={showroom.id} style={showroomCardStyle}>
+                  {/* --- REPLACE THE HEADER INSIDE THE MAP LOOP WITH THIS --- */}
                   <div style={cardHeaderStyle}>
                     <ShowroomLogo logoUrl={showroom.logo_url} size={100} />
-					<button
-                    onClick={() =>
-                      toggleShowroomActive(showroom.id, showroom.active)
-                    }
-                    style={statusToggleStyle(showroom.active)}
-                  >
-                    {showroom.active
-                      ? t.showrooms.active
-                      : t.showrooms.inactive}
-                  </button>
-					
+  
                     <div style={cardTitleStyle}>
                       <h3 style={showroomNameStyle}>{showroom.name}</h3>
-                      
+                      <button
+                        onClick={() => toggleShowroomActive(showroom.id, showroom.active)}
+                        style={statusToggleStyle(showroom.active)}
+                      >
+                        {showroom.active ? t.showrooms.active : t.showrooms.inactive}
+                      </button>
                     </div>
+
+                    {/* NEW: DELETE BUTTON */}
+                    <button 
+                      onClick={() => handleDelete(showroom.id, showroom.name)}
+                      style={{
+                        background: "rgba(239, 68, 68, 0.1)",
+                        color: "#ef4444",
+                        border: "none",
+                        padding: "10px",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "background 0.2s"
+                      }}
+                      title="Delete Showroom"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                  {/* --- END OF REPLACEMENT --- */}
                   </div>
                   <div style={cardDetailsStyle}>
                     {showroom.address ? (
