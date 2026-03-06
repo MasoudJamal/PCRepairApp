@@ -429,8 +429,7 @@ export default function ShowroomsPage() {
                     </button>
                   </div>
                   {/* --- END OF REPLACEMENT --- */}
-                  </div>
-                  <div style={cardDetailsStyle}>
+                    <div style={cardDetailsStyle}>
                     {showroom.address ? (
                       <div style={detailItemStyle}>
                         <MapPin size={16} style={{ color: "#94a3b8" }} />
