@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -34,6 +34,27 @@ export default function LoginPage() {
   const router = useRouter();
   const supabase = createSupabaseClient();
   const { setSession } = useSession();
+  
+  // --- NEW BRANDING STATE ---
+  const [dynamicBranding, setDynamicBranding] = useState<{
+    logo_url: string | null;
+    company_name: string;
+  } | null>(null);
+
+  // Fetch logo and name from Supabase on load
+  useEffect(() => {
+    async function loadBranding() {
+      const { data } = await supabase
+        .from("settings")
+        .select("logo_url, company_name")
+        .eq("id", 1)
+        .single();
+      
+      if (data) setDynamicBranding(data);
+    }
+    loadBranding();
+  }, [supabase]);
+  // --- END BRANDING STATE ---
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -289,10 +310,11 @@ const showroom = Array.isArray(user.showroom)
           {/* Logo and Brand */}
           <div style={brandSectionStyle}>
             <div style={logoContainerStyle}>
-              {BRANDING.logo ? (
+              {/* Check if we have a logo in Supabase, otherwise show the icon */}
+              {dynamicBranding?.logo_url ? (
                 <img
-                  src={BRANDING.logo}
-                  alt={`${BRANDING.appName} Logo`}
+                  src={dynamicBranding.logo_url}
+                  alt="Company Logo"
                   style={logoStyle}
                 />
               ) : (
@@ -301,7 +323,11 @@ const showroom = Array.isArray(user.showroom)
                 </div>
               )}
             </div>
-            <h1 style={appNameStyle}>{BRANDING.appName}</h1>
+
+            {/* Use the company name from Supabase, or fall back to the config */}
+            <h1 style={appNameStyle}>
+              {dynamicBranding?.company_name || BRANDING.appName}
+            </h1>
             <p style={appTaglineStyle}>
               {lang === "en" 
                 ? "Professional PC Repair Management System"
