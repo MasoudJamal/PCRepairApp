@@ -162,7 +162,7 @@ export default function DashboardPage() {
             </button>
             <div className="h-8 w-px bg-gray-700"></div>
             <button 
-              onClick={() => router.push("/auth/logout")}
+              onClick={() => router.push("/auth/login")}
               className="flex items-center gap-2 px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
             >
               <LogOut className="w-4 h-4" />
