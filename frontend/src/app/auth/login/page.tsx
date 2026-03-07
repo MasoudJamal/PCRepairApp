@@ -88,10 +88,10 @@ export default function LoginPage() {
         title: "Powerful PC Repair Management",
         items: [
           "Track repair orders in real-time",
-          "Manage customer database",
-          "Prepare and print repair forms rapidly",
-          "Generate professional invoices",
-          "Analytics & reporting dashboard"
+          "Format PC and install needed applications",
+          "Remove harmful viruses and malware from PC's",
+          "Repair and replacing parts such as hinges and displays",
+          "Overheating treatment for PCs and many more ..."
         ]
       }
     },
@@ -118,10 +118,10 @@ export default function LoginPage() {
         title: "Gestion Puissante des Réparations PC",
         items: [
           "Suivi des commandes en temps réel",
-          "Gestion de la base de données clients",
-          "Préparez et imprimez rapidement les formulaires de réparation",
-          "Génération de factures professionnelles",
-          "Tableau de bord analytique et rapports"
+          "Formatez votre PC et installez les applications nécessaires.",
+          "Supprimer les virus et logiciels malveillants des PC",
+          "Réparation et remplacement de pièces telles que les charnières et les afficheures",
+		  "Traitement de la surchauffe pour PC et bien plus encore..."
         ]
       }
     },
@@ -584,8 +584,8 @@ const logoContainerStyle: React.CSSProperties = {
 };
 
 const logoStyle: React.CSSProperties = {
-  width: "120px",
-  height: "120px",
+  width: "200px",
+  height: "200px",
   objectFit: "contain",
   margin: "0 auto",
 };
