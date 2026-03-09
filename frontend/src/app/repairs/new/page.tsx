@@ -583,6 +583,33 @@ export default function NewRepairPage() {
       .single();
 
     if (repairError) throw repairError;
+
+    // --- NEW: TRIGGER EMAIL ALERT ---
+    try {
+      // 1. Get the alert email from your system settings table
+      const { data: settings } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'alert_email')
+        .single();
+
+      if (settings?.value) {
+        // 2. Call your Edge Function or API route to send the email
+        // We do this 'silently' so it doesn't block the UI
+        fetch('/api/send-intake-alert', {
+          method: 'POST',
+          body: JSON.stringify({
+            repairRef: finalRepairRef,
+            customer: customerName,
+            device: model,
+            targetEmail: settings.value
+          })
+        });
+      }
+    } catch (e) {
+      console.log("Email alert failed, but repair was saved.");
+    }
+
     router.push(`/repairs/${repairData.id}/intake-summary`);
 
   } catch (error: any) {
