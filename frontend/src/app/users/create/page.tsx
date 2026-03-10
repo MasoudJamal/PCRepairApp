@@ -15,7 +15,7 @@ import {
   Building,
   Shield,
   User,
-  Percent // Added for the discount icon
+  Percent
 } from "lucide-react";
 
 const I18N = {
@@ -32,11 +32,12 @@ const I18N = {
       manager: "Manager",
       employee: "Employee",
       driver: "Driver",
+      technician: "Technician", // Added
     },
     showroom: "Showroom",
     active: "Active User",
     language: "Language",
-    maxDiscount: "Max Discount (%)", // New
+    maxDiscount: "Max Discount (%)",
     create: "Create User",
     cancel: "Cancel",
     passwordStrength: "Password Strength",
@@ -51,8 +52,8 @@ const I18N = {
     namererequired: "Full name is required",
     userrequired: "Unique username required",
     minpass: "Password must be at least 6 characters",
-    showroomrequired: "Showroom selection required for non-admin roles",
-    invalidDiscount: "Discount must be between 0 and 100", // Added
+    showroomrequired: "Showroom selection required for this role", // Updated text
+    invalidDiscount: "Discount must be between 0 and 100",
   },
   fr: {
     title: "Créer un Nouvel Utilisateur",
@@ -67,11 +68,12 @@ const I18N = {
       manager: "Responsable",
       employee: "Employé",
       driver: "Chauffeur",
+      technician: "Technicien", // Added
     },
     showroom: "Salle d'Exposition",
     active: "Utilisateur Actif",
     language: "Langue",
-    maxDiscount: "Remise Max (%)", // New
+    maxDiscount: "Remise Max (%)",
     create: "Créer l'Utilisateur",
     cancel: "Annuler",
     passwordStrength: "Force du Mot de Passe",
@@ -86,8 +88,8 @@ const I18N = {
     namererequired: "Le nom complet est requis",
     userrequired: "Nom d'utilisateur unique requis",
     minpass: "Le mot de passe doit comporter au moins 6 caractères",
-    showroomrequired: "Sélection de salle d’exposition requise pour les postes non administratifs",
-    invalidDiscount: "La remise doit être comprise entre 0 et 100", // Added
+    showroomrequired: "Sélection de salle d’exposition requise pour ce rôle", // Updated text
+    invalidDiscount: "La remise doit être comprise entre 0 et 100",
   },
 };
 
@@ -113,7 +115,7 @@ export default function CreateUserPage() {
     showroom_id: "",
     language: "en",
     active: true,
-    max_discount_percent: "" as string | number, // Changed to allow empty string for placeholder
+    max_discount_percent: "" as string | number,
   });
 
   const [touched, setTouched] = useState({
@@ -127,7 +129,6 @@ export default function CreateUserPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  /* 🔒 ACCESS GUARD */
   useEffect(() => {
     if (loadingSession) return;
     if (!session) {
@@ -139,7 +140,6 @@ export default function CreateUserPage() {
     }
   }, [session, loadingSession, router]);
 
-  /* 📥 LOAD SHOWROOMS */
   useEffect(() => {
     if (!session) return;
     if (session.role === "manager") {
@@ -149,9 +149,8 @@ export default function CreateUserPage() {
         ...f,
         showroom_id: showroomId,
       }));
-
-  return;
-}
+      return;
+    }
     const load = async () => {
       const { data } = await supabase
         .from("showrooms")
@@ -162,8 +161,9 @@ export default function CreateUserPage() {
     load();
   }, [session, supabase]);
 
+  // Handle auto-clearing showroom for Admin and Technician
   useEffect(() => {
-    if (form.role === "admin") {
+    if (form.role === "admin" || form.role === "technician") {
       setForm(f => ({ ...f, showroom_id: "" }));
       setTouched(t => ({ ...t, showroom_id: false }));
     }
@@ -171,16 +171,16 @@ export default function CreateUserPage() {
 
   const availableRoles =
     session?.role === "admin"
-      ? ["admin", "manager", "employee", "driver"]
-      : ["manager", "employee", "driver"];
+      ? ["admin", "manager", "employee", "driver", "technician"]
+      : ["manager", "employee", "driver", "technician"];
 
-  /* ✅ ERRORS */
   const errors = {
     full_name: touched.full_name && !form.full_name.trim() ? t.namererequired : "",
     username: touched.username && !form.username.trim() ? t.userrequired : "",
     password: touched.password && form.password.length < 6 ? t.minpass : "",
-    showroom_id: touched.showroom_id && form.role !== "admin" && !form.showroom_id ? t.showroomrequired : "",
-    discount: (Number(form.max_discount_percent) < 0 || Number(form.max_discount_percent) > 100) ? t.invalidDiscount : "", // Added verification
+    // Showroom is NOT required for admin OR technician
+    showroom_id: touched.showroom_id && !["admin", "technician"].includes(form.role) && !form.showroom_id ? t.showroomrequired : "",
+    discount: (Number(form.max_discount_percent) < 0 || Number(form.max_discount_percent) > 100) ? t.invalidDiscount : "",
   };
 
   const canSubmit =
@@ -188,7 +188,7 @@ export default function CreateUserPage() {
     !errors.username &&
     !errors.password &&
     !errors.showroom_id &&
-    !errors.discount && // Added check
+    !errors.discount &&
     form.full_name.trim() !== "" &&
     form.username.trim() !== "";
 
@@ -204,8 +204,9 @@ export default function CreateUserPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          max_discount_percent: Number(form.max_discount_percent) || 0, // Ensure it's a number for DB
-          showroom_id: form.role === "admin" ? null : form.showroom_id,
+          max_discount_percent: Number(form.max_discount_percent) || 0,
+          // DB null for roles that don't use showrooms
+          showroom_id: ["admin", "technician"].includes(form.role) ? null : form.showroom_id,
           created_by_role: session!.role,
         }),
       });
@@ -231,7 +232,6 @@ export default function CreateUserPage() {
   return (
     <div style={pageStyle}>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
-      {/* Header */}
       <div style={headerStyle}>
         <button onClick={() => router.push("/users")} style={backButtonStyle}>
           <ArrowLeft size={20} />
@@ -248,10 +248,8 @@ export default function CreateUserPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div style={contentStyle}>
         <div style={formContainerStyle}>
-          {/* Section: Personal */}
           <div style={formSectionStyle}>
             <div style={sectionHeaderStyle}>
               <div style={sectionIconStyle}><User size={20} /></div>
@@ -286,7 +284,6 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {/* Section: Access */}
           <div style={formSectionStyle}>
             <div style={sectionHeaderStyle}>
               <div style={sectionIconStyle}><Shield size={20} /></div>
@@ -340,7 +337,6 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {/* Section: Settings */}
           <div style={formSectionStyle}>
             <div style={sectionHeaderStyle}>
               <div style={sectionIconStyle}><Building size={20} /></div>
@@ -348,15 +344,23 @@ export default function CreateUserPage() {
             </div>
             <div style={formGridStyle}>
               <div style={inputGroupStyle}>
-                <label style={labelStyle}>{t.showroom}{form.role !== "admin" && <span style={requiredStyle}>*</span>}</label>
+                <label style={labelStyle}>
+                  {t.showroom}
+                  {/* Now optional for Admin and Technician */}
+                  {!["admin", "technician"].includes(form.role) && <span style={requiredStyle}>*</span>}
+                </label>
                 <div style={inputWrapperStyle}>
                   {session.role === "admin" ? (
                     <select
                       value={form.showroom_id}
-                      disabled={form.role === "admin"}
+                      disabled={form.role === "admin" || form.role === "technician"}
                       onBlur={() => setTouched(t => ({ ...t, showroom_id: true }))}
                       onChange={(e) => setForm(f => ({ ...f, showroom_id: e.target.value }))}
-                      style={{ ...selectStyle, opacity: form.role === "admin" ? 0.5 : 1, cursor: form.role === "admin" ? "not-allowed" : "pointer" }}
+                      style={{ 
+                        ...selectStyle, 
+                        opacity: (form.role === "admin" || form.role === "technician") ? 0.5 : 1, 
+                        cursor: (form.role === "admin" || form.role === "technician") ? "not-allowed" : "pointer" 
+                      }}
                     >
                       <option value="">— Select showroom —</option>
                       {showrooms.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -387,7 +391,6 @@ export default function CreateUserPage() {
                 </div>
               </div>
 
-              {/* NEW FIELD: max_discount_percent with verification and placeholder */}
               <div style={inputGroupStyle}>
                 <label style={labelStyle}>{t.maxDiscount}</label>
                 <div style={inputWrapperStyle}>
@@ -401,7 +404,6 @@ export default function CreateUserPage() {
                       value={form.max_discount_percent}
                       onChange={e => {
                         const val = e.target.value;
-                        // Basic validation: limit characters or logic can go here if needed
                         setForm(f => ({ ...f, max_discount_percent: val === "" ? "" : Number(val) }));
                       }}
                       style={{ ...inputStyle(!!errors.discount), paddingLeft: 36 }}
@@ -432,7 +434,6 @@ export default function CreateUserPage() {
           </div>
         </div>
 
-        {/* Side Panel */}
         <div style={sidePanelStyle}>
           <div style={requirementsCardStyle}>
             <h4 style={requirementsTitleStyle}><CheckCircle size={20} /><span>{t.requirements}</span></h4>
@@ -450,7 +451,12 @@ export default function CreateUserPage() {
                   <div style={roleBadgeStyle(role)}>{role.charAt(0).toUpperCase()}</div>
                   <div>
                     <strong>{t.roles[role as keyof typeof t.roles]}</strong>
-                    <p style={roleDescriptionStyle}>{role === "admin" ? "Full system access" : role === "manager" ? "Manage team and showroom" : role === "employee" ? "Standard access" : "Transportation access"}</p>
+                    <p style={roleDescriptionStyle}>
+                      {role === "admin" ? "Full system access" : 
+                       role === "manager" ? "Manage team and showroom" : 
+                       role === "technician" ? "Workshop & repair access" : // Added description
+                       role === "employee" ? "Standard access" : "Transportation access"}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -515,7 +521,7 @@ const infoCardStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)"
 const infoTitleStyle: React.CSSProperties = { color: "#f8fafc", fontSize: "16px", fontWeight: 600, margin: "0 0 16px 0" };
 const roleInfoStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: "12px" };
 const roleItemStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "rgba(255, 255, 255, 0.03)", borderRadius: "8px" };
-const roleBadgeStyle = (role: string): React.CSSProperties => ({ width: "32px", height: "32px", borderRadius: "8px", background: role === "admin" ? "#8b5cf6" : role === "manager" ? "#3b82f6" : role === "employee" ? "#10b981" : "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontWeight: 600, fontSize: "14px" });
+const roleBadgeStyle = (role: string): React.CSSProperties => ({ width: "32px", height: "32px", borderRadius: "8px", background: role === "admin" ? "#8b5cf6" : role === "manager" ? "#3b82f6" : role === "employee" ? "#10b981" : role === "technician" ? "#ec4899" : "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontWeight: 600, fontSize: "14px" });
 const roleDescriptionStyle: React.CSSProperties = { fontSize: "12px", color: "#94a3b8", margin: "2px 0 0 0" };
 
 const globalStyles = `

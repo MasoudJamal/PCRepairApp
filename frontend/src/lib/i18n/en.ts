@@ -95,6 +95,7 @@ export const en = {
     manager: "Manager",
     employee: "Employee",
     driver: "Driver",
+	technician: "Technician"
   },
 
   users: {

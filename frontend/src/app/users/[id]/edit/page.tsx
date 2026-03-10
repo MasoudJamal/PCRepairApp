@@ -128,6 +128,13 @@ export default function EditUserPage() {
 
     loadUser();
   }, [session, id, supabase, router]);
+  
+   /* 🔄 AUTO-UPDATE SHOWROOM LABEL FOR GLOBAL ROLES */
+  useEffect(() => {
+    if (role === "admin" || role === "technician") {
+      setShowroomName(lang === "fr" ? "Aucun (Rôle Global)" : "None (Global Role)");
+    }
+  }, [role, lang]);
 
   /* ✅ VALIDATION */
   const isDiscountInvalid = Number(maxDiscount) < 0 || Number(maxDiscount) > 100;
@@ -155,6 +162,8 @@ export default function EditUserPage() {
           language,
           max_discount_percent: Number(maxDiscount) || 0,
           password: password || null,
+          // Add this line to handle the global role logic:
+          showroom_id: (role === "admin" || role === "technician") ? null : undefined,
         }),
       });
 
@@ -291,6 +300,7 @@ export default function EditUserPage() {
                   >
                     {session?.role === "admin" && <option value="admin">{t.roles.admin}</option>}
                     <option value="manager">{t.roles.manager}</option>
+					<option value="technician">{t.roles.technician}</option>
                     <option value="employee">{t.roles.employee}</option>
                     <option value="driver">{t.roles.driver}</option>
                   </select>

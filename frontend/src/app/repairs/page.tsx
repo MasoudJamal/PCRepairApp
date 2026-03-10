@@ -110,6 +110,7 @@ export default function RepairsPage() {
     console.error("Error:", error.message);
   } finally {
     setLoading(false);
+	
   }
 };
 
