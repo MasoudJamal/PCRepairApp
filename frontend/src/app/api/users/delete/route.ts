@@ -3,18 +3,10 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const cookieStore = await cookies();
-
-const supabase = createServerClient(
+/* Admin client (bypasses RLS) */
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    cookies: {
-      get: (name: string) => cookieStore.get(name)?.value,
-      set: () => {},
-      remove: () => {},
-    },
-  }
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function POST(req: Request) {
@@ -25,13 +17,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing user_id" }, { status: 400 });
     }
 
-    /* 1️⃣ Get the current logged-in user */
+    /* Get session from cookies */
+    const cookieStore = await cookies();
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies }
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+          set() {},
+          remove() {},
+        },
+      }
     );
 
+    /* Get logged-in user */
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -40,7 +43,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    /* 2️⃣ Get current user role */
+    /* Get current user role */
     const { data: currentUser } = await supabaseAdmin
       .from("profiles")
       .select("role, showroom_id")
@@ -51,7 +54,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 403 });
     }
 
-    /* 3️⃣ Prevent self delete */
+    /* Prevent self-delete */
     if (user.id === user_id) {
       return NextResponse.json(
         { error: "You cannot delete your own account" },
@@ -59,12 +62,12 @@ export async function POST(req: Request) {
       );
     }
 
-    /* 4️⃣ Only admins or managers allowed */
+    /* Only admin or manager */
     if (!["admin", "manager"].includes(currentUser.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    /* 5️⃣ Managers cannot delete admins */
+    /* Get target user */
     const { data: targetUser } = await supabaseAdmin
       .from("profiles")
       .select("role, showroom_id")
@@ -72,9 +75,13 @@ export async function POST(req: Request) {
       .single();
 
     if (!targetUser) {
-      return NextResponse.json({ error: "Target user not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Target user not found" },
+        { status: 404 }
+      );
     }
 
+    /* Manager restrictions */
     if (currentUser.role === "manager") {
       if (targetUser.role === "admin") {
         return NextResponse.json(
@@ -91,13 +98,13 @@ export async function POST(req: Request) {
       }
     }
 
-    /* 6️⃣ Delete auth user */
+    /* Delete auth user */
     const { error: authError } =
       await supabaseAdmin.auth.admin.deleteUser(user_id);
 
     if (authError) throw authError;
 
-    /* 7️⃣ Cleanup tables */
+    /* Clean up other tables */
     await supabaseAdmin.from("users").delete().eq("id", user_id);
     await supabaseAdmin.from("profiles").delete().eq("id", user_id);
 
@@ -105,6 +112,7 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Delete user error:", error);
+
     return NextResponse.json(
       { error: error.message || "Delete failed" },
       { status: 500 }
