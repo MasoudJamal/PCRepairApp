@@ -14,7 +14,7 @@ export default function RepairsPage() {
   const router = useRouter();
   const { session, loadingSession: sessionLoading } = useSession();
   const [repairs, setRepairs] = useState<any[]>([]);
-  const [showrooms, setShowrooms] = useState<any[]>([]); // For Admin filter
+  const [showrooms, setShowrooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedShowroom, setSelectedShowroom] = useState<string>("all");
@@ -79,19 +79,19 @@ export default function RepairsPage() {
       setLoading(true);
       const supabase = createSupabaseClient();
       
+      // FIX: Simplified the select to avoid the 'relationship' error
       let query = supabase
         .from('repairs')
         .select(`
           *, 
           customers (*), 
           devices (*),
-          staff:profiles!repairs_user_id_fkey (full_name),
+          staff:profiles (full_name),
           showrooms (name)
         `);
 
       const userRole = session.role as string;
 
-      // 1. Apply Filtering Logic
       if (userRole === 'admin' || userRole === 'technician') {
         if (selectedShowroom !== "all") {
           query = query.eq('showroom_id', selectedShowroom);
@@ -99,20 +99,14 @@ export default function RepairsPage() {
       } else if (session.showroom?.id) {
         query = query.eq('showroom_id', session.showroom.id);
       } else {
-        console.warn("User has no showroom ID in session. Session data:", session);
         setRepairs([]);
         setLoading(false);
         return;
       }
 
-      // 2. Execute Query
       const { data: result, error: fetchErr } = await query.order('received_at', { ascending: false });
 
       if (fetchErr) throw fetchErr;
-
-      // Log this to your browser console (F12) to see what's happening
-      console.log("SUCCESS: Fetched", result?.length, "repairs for showroom:", session.showroom?.id || 'All');
-      
       setRepairs(result || []);
     } catch (err: any) {
       console.error("Fetch Error:", err.message);
@@ -121,7 +115,6 @@ export default function RepairsPage() {
     }
   }, [session, selectedShowroom]);
 
-  // Fetch Showrooms for Admin dropdown
   useEffect(() => {
     if (session?.role === 'admin') {
       const fetchShowrooms = async () => {
@@ -153,23 +146,17 @@ export default function RepairsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-black text-white">
-      {/* Print Styles remain the same... */}
       <div className="p-4 md:p-8 pt-24 max-w-7xl mx-auto">
-        
-        {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
             <button onClick={() => router.push('/dashboard')} className="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white"><ArrowLeft /></button>
             <h1 className="text-3xl font-bold flex items-center gap-3"><Wrench className="text-blue-400" /> {t[lang].title}</h1>
           </div>
-          <div className="flex gap-3">
-             <button onClick={() => router.push('/repairs/new')} className="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-xl font-bold shadow-lg">
-                + {t[lang].new}
-             </button>
-          </div>
+          <button onClick={() => router.push('/repairs/new')} className="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-xl font-bold shadow-lg">
+            + {t[lang].new}
+          </button>
         </div>
 
-        {/* Filters Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="md:col-span-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
@@ -182,7 +169,6 @@ export default function RepairsPage() {
             />
           </div>
 
-          {/* Admin Showroom Filter */}
           {session?.role === 'admin' && (
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
@@ -198,7 +184,6 @@ export default function RepairsPage() {
           )}
         </div>
 
-        {/* Table remains largely same, added showroom info for Admin */}
         <div className="bg-gray-800/40 border border-gray-700/50 rounded-2xl overflow-hidden overflow-x-auto">
           <table className="w-full text-left min-w-[600px]">
             <thead className="border-b border-gray-700/50 bg-gray-900/50 uppercase text-[10px] tracking-widest text-gray-500">
@@ -242,8 +227,44 @@ export default function RepairsPage() {
         </div>
       </div>
 
-      {/* --- INTAKE DETAILS MODAL --- (Unchanged, already supports printing) */}
-      {/* ... keep modal code as is ... */}
+      {/* MODAL SECTION - Added back and fixed */}
+      {showModal && selectedRepair && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-gray-800 flex justify-between items-center">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Info className="text-blue-400" /> {t[lang].modalTitle}
+              </h2>
+              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-white"><X /></button>
+            </div>
+            
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-[10px] text-gray-500 mb-1">{t[lang].ref}</p>
+                <p className="text-xl font-mono font-bold text-blue-400">{selectedRepair.repair_ref}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 mb-1">{t[lang].preparedBy}</p>
+                <p className="text-white font-semibold">{selectedRepair.staff?.full_name || "Staff"}</p>
+              </div>
+              <div className="md:col-span-2 bg-gray-800/50 p-4 rounded-xl border border-gray-700/30">
+                <div className="flex items-center gap-3 mb-2">
+                  <UserIcon className="text-blue-400 w-4 h-4" />
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t[lang].custInfo}</span>
+                </div>
+                <p className="font-bold text-lg">{selectedRepair.customers?.full_name}</p>
+                <p className="text-sm text-gray-400 flex items-center gap-2 mt-1"><Phone className="w-3 h-3" /> {selectedRepair.customers?.phone}</p>
+              </div>
+            </div>
+
+            <div className="p-6 pt-0 flex justify-end gap-3">
+              <button onClick={() => setShowModal(false)} className="px-6 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 transition-all font-bold">
+                {t[lang].close}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
