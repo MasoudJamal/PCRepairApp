@@ -87,16 +87,23 @@ export default function RepairsPage() {
           showrooms (name)
         `);
 
-      // 1. Role-based constraints
-      if (session?.role === 'admin') {
+      // 1. Logic for ADMIN or TECHNICIAN (Global Roles)
+      if (session?.role === 'admin' || session?.role === 'technician') {
         if (selectedShowroom !== "all") {
           query = query.eq('showroom_id', selectedShowroom);
         }
-      } else {
-        // Managers and Employees only see their own showroom
-        if (session?.showroom?.id) {
-          query = query.eq('showroom_id', session.showroom.id);
-        }
+      } 
+      // 2. Logic for Showroom-bound roles (Manager, Employee, etc.)
+      else if (session?.showroom?.id) {
+        query = query.eq('showroom_id', session.showroom.id);
+      } 
+      // 3. Safety Net: If the user has no showroom and isn't an admin, 
+      // they shouldn't see anything, or you might want to show an error.
+      else {
+        console.warn("User has no showroom assigned in session.");
+        setRepairs([]);
+        setLoading(false);
+        return;
       }
 
       const { data, error } = await query.order('received_at', { ascending: false });
@@ -104,7 +111,7 @@ export default function RepairsPage() {
       if (error) throw error;
       setRepairs(data || []);
     } catch (error: any) {
-      console.error("Error:", error.message);
+      console.error("Fetch Repairs Error:", error.message);
     } finally {
       setLoading(false);
     }
