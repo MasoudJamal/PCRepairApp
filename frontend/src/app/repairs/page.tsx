@@ -91,31 +91,29 @@ export default function RepairsPage() {
 
       const userRole = session.role as string;
 
-      // 1. Role Logic
+      // 1. Apply Filtering Logic
       if (userRole === 'admin' || userRole === 'technician') {
         if (selectedShowroom !== "all") {
           query = query.eq('showroom_id', selectedShowroom);
         }
       } else if (session.showroom?.id) {
-        // Use the nested ID from the session object
         query = query.eq('showroom_id', session.showroom.id);
       } else {
+        console.warn("User has no showroom ID in session. Session data:", session);
         setRepairs([]);
         setLoading(false);
         return;
       }
 
-      // 2. Execute Query (Only one declaration of data/error)
-      const { data: fetchResult, error: fetchError } = await query.order('received_at', { ascending: false });
+      // 2. Execute Query
+      const { data: result, error: fetchErr } = await query.order('received_at', { ascending: false });
+
+      if (fetchErr) throw fetchErr;
+
+      // Log this to your browser console (F12) to see what's happening
+      console.log("SUCCESS: Fetched", result?.length, "repairs for showroom:", session.showroom?.id || 'All');
       
-      if (fetchError) {
-        console.error("Supabase Error:", fetchError.message);
-        throw fetchError;
-      }
-
-      console.log("DEBUG: Repairs found:", fetchResult?.length || 0);
-      setRepairs(fetchResult || []);
-
+      setRepairs(result || []);
     } catch (err: any) {
       console.error("Fetch Error:", err.message);
     } finally {
