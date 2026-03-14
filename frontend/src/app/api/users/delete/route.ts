@@ -97,6 +97,12 @@ export async function POST(req: Request) {
         );
       }
     }
+	
+	/* Remove device_auth references */
+    await supabaseAdmin
+      .from("device_auth")
+      .delete()
+      .or(`requester_user_id.eq.${user_id},requesting_user_id.eq.${user_id}`);
 
     /* Delete auth user */
     const { error: authError } =
