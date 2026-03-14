@@ -73,8 +73,7 @@ export default function RepairsPage() {
   };
 
   const fetchRepairs = useCallback(async () => {
-	 
-    if (!session) return; // Don't fetch if session isn't ready
+    if (!session) return; 
 
     try {
       setLoading(true);
@@ -90,39 +89,35 @@ export default function RepairsPage() {
           showrooms (name)
         `);
 
-      // Cast role to string to avoid TypeScript "no overlap" error
       const userRole = session.role as string;
 
-      // 1. Logic for Global Roles
+      // 1. Role Logic
       if (userRole === 'admin' || userRole === 'technician') {
         if (selectedShowroom !== "all") {
           query = query.eq('showroom_id', selectedShowroom);
         }
-      } 
-      // 2. Logic for Showroom-bound roles
-      else if (session.showroom?.id) {
+      } else if (session.showroom?.id) {
+        // Use the nested ID from the session object
         query = query.eq('showroom_id', session.showroom.id);
-      } 
-      else {
-        // If no showroom and not admin, return empty
+      } else {
         setRepairs([]);
         setLoading(false);
         return;
       }
-	// --- 2. NOW EXECUTE AND LOG ---
-      const { data, error } = await query.order('received_at', { ascending: false });
+
+      // 2. Execute Query (Only one declaration of data/error)
+      const { data: fetchResult, error: fetchError } = await query.order('received_at', { ascending: false });
       
-      console.log("DEBUG: Current Showroom ID used in filter:", session.showroom?.id);
-      console.log("DEBUG: Supabase Data length:", data?.length);
-      console.log("DEBUG: Supabase Error:", error);
-// end debug	  
+      if (fetchError) {
+        console.error("Supabase Error:", fetchError.message);
+        throw fetchError;
+      }
 
-      const { data, error } = await query.order('received_at', { ascending: false });
+      console.log("DEBUG: Repairs found:", fetchResult?.length || 0);
+      setRepairs(fetchResult || []);
 
-      if (error) throw error;
-      setRepairs(data || []);
-    } catch (error: any) {
-      console.error("Fetch Error:", error.message);
+    } catch (err: any) {
+      console.error("Fetch Error:", err.message);
     } finally {
       setLoading(false);
     }
