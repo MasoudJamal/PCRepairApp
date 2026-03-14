@@ -73,6 +73,11 @@ export default function RepairsPage() {
   };
 
   const fetchRepairs = useCallback(async () => {
+	  // Temporarily test
+	  const { data, error } = await query;
+console.log("Supabase Data:", data);
+console.log("Supabase Error:", error);
+// End of test
     if (!session) return; // Don't fetch if session isn't ready
 
     try {
