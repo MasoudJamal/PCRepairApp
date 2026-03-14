@@ -114,14 +114,34 @@ export async function POST(req: Request) {
     await supabaseAdmin.from("users").delete().eq("id", user_id);
     await supabaseAdmin.from("profiles").delete().eq("id", user_id);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+  success: true,
+  message_en: "User deleted successfully",
+  message_fr: "Utilisateur supprimé avec succès"
+});
 
   } catch (error: any) {
-    console.error("Delete user error:", error);
+  console.error("Delete user error:", error);
 
-    return NextResponse.json(
-      { error: error.message || "Delete failed" },
-      { status: 500 }
-    );
+  let message_en = "Delete failed";
+  let message_fr = "Échec de la suppression";
+
+  if (error.message?.includes("device_auth")) {
+    message_en = "User cannot be deleted because device authorization records exist.";
+    message_fr = "L'utilisateur ne peut pas être supprimé car des autorisations d'appareil existent.";
   }
+
+  if (error.message?.includes("Unauthorized")) {
+    message_en = "You are not authorized to delete this user.";
+    message_fr = "Vous n'êtes pas autorisé à supprimer cet utilisateur.";
+  }
+
+  return NextResponse.json(
+    {
+      success: false,
+      message_en,
+      message_fr
+    },
+    { status: 500 }
+  );
 }

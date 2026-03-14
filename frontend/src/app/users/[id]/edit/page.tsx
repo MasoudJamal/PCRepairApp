@@ -180,21 +180,42 @@ export default function EditUserPage() {
 
   /* 🗑 DELETE USER */
   const handleDelete = async () => {
-    if (!window.confirm(t.editUser.confirmDelete)) return;
-    setIsDeleting(true);
-    try {
-      const response = await fetch("/api/users/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: id }),
-      });
-      if (!response.ok) throw new Error("Failed to delete user");
-      router.push("/users");
-    } catch (error) {
-      setError(t.editUser.deleteError || "Failed to delete user");
+  if (!window.confirm(t.editUser.confirmDelete)) return;
+
+  setIsDeleting(true);
+  setError(null);
+  setSuccess(null);
+
+  try {
+    const response = await fetch("/api/users/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: id }),
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      setError(lang === "fr" ? result.message_fr : result.message_en);
       setIsDeleting(false);
+      return;
     }
-  };
+
+    setSuccess(lang === "fr" ? result.message_fr : result.message_en);
+
+    setTimeout(() => {
+      router.push("/users");
+    }, 2000);
+
+  } catch (error) {
+    setError(
+      lang === "fr"
+        ? "Erreur inattendue lors de la suppression"
+        : "Unexpected error during deletion"
+    );
+    setIsDeleting(false);
+  }
+};
 
   if (loadingSession || !session || loadingUser) {
     return (
