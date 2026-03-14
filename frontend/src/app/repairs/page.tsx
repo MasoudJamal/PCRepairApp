@@ -73,6 +73,8 @@ export default function RepairsPage() {
   };
 
   const fetchRepairs = useCallback(async () => {
+    if (!session) return; // Don't fetch if session isn't ready
+
     try {
       setLoading(true);
       const supabase = createSupabaseClient();
@@ -87,20 +89,21 @@ export default function RepairsPage() {
           showrooms (name)
         `);
 
-      // 1. Logic for ADMIN or TECHNICIAN (Global Roles)
-      if (session?.role === 'admin' || session?.role === 'technician') {
+      // Cast role to string to avoid TypeScript "no overlap" error
+      const userRole = session.role as string;
+
+      // 1. Logic for Global Roles
+      if (userRole === 'admin' || userRole === 'technician') {
         if (selectedShowroom !== "all") {
           query = query.eq('showroom_id', selectedShowroom);
         }
       } 
-      // 2. Logic for Showroom-bound roles (Manager, Employee, etc.)
-      else if (session?.showroom?.id) {
+      // 2. Logic for Showroom-bound roles
+      else if (session.showroom?.id) {
         query = query.eq('showroom_id', session.showroom.id);
       } 
-      // 3. Safety Net: If the user has no showroom and isn't an admin, 
-      // they shouldn't see anything, or you might want to show an error.
       else {
-        console.warn("User has no showroom assigned in session.");
+        // If no showroom and not admin, return empty
         setRepairs([]);
         setLoading(false);
         return;
@@ -111,7 +114,7 @@ export default function RepairsPage() {
       if (error) throw error;
       setRepairs(data || []);
     } catch (error: any) {
-      console.error("Fetch Repairs Error:", error.message);
+      console.error("Fetch Error:", error.message);
     } finally {
       setLoading(false);
     }
