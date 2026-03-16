@@ -131,11 +131,6 @@ export default function RepairsPage() {
     fetchRepairs();
   }, [sessionLoading, session, fetchRepairs]);
 
-  // Handle printing
-  const handlePrint = () => {
-    window.print();
-  };
-
   const filteredRepairs = repairs.filter((r: any) => {
     const matchesSearch = r.repair_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           r.customers?.phone?.includes(searchTerm);
@@ -149,16 +144,6 @@ export default function RepairsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-black text-white">
-      {/* Hide website UI when printing */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          nav, button, .no-print { display: none !important; }
-          .print-only { display: block !important; color: black !important; }
-          body { background: white !important; color: black !important; }
-          .modal-box { border: none !important; box-shadow: none !important; width: 100% !important; max-width: none !important; position: static !important; }
-        }
-      `}} />
-
       <div className="p-4 md:p-8 pt-24 max-w-7xl mx-auto no-print">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
@@ -255,7 +240,7 @@ export default function RepairsPage() {
       {showModal && selectedRepair && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl modal-box">
-            <div className="p-6 border-b border-gray-800 flex justify-between items-center no-print">
+            <div className="p-6 border-b border-gray-800 flex justify-between items-center">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Info className="text-blue-400" /> {t[lang].modalTitle}
               </h2>
@@ -280,7 +265,7 @@ export default function RepairsPage() {
                 </div>
                 <div>
                   <p className="text-[10px] text-gray-400 mb-1">{t[lang].devDetails}</p>
-                  <p className="font-bold text-base">{selectedRepair.devices?.brand} {selectedRepair.devices?.model}</p>
+                  <p className="font-bold text-base">{selectedRepair.devices?.brands?.name} {selectedRepair.devices?.model}</p>
                   <p className="text-gray-400 font-mono text-xs">{t[lang].serial}: {selectedRepair.devices?.serial_number || t[lang].none}</p>
                 </div>
               </div>
@@ -294,10 +279,10 @@ export default function RepairsPage() {
 
               <div className="md:col-span-2">
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">{t[lang].acc}</p>
-                <p className="text-gray-300 italic">{selectedRepair.accessories || t[lang].none}</p>
+                <p className="text-gray-300 italic">{selectedRepair.accessories_received || t[lang].none}</p>
               </div>
 
-              <div className="md:col-span-2 border-t border-gray-800 pt-4 flex justify-between items-center no-print">
+              <div className="md:col-span-2 border-t border-gray-800 pt-4 flex justify-between items-center">
                 <div>
                   <p className="text-[10px] text-gray-500 mb-1">{t[lang].preparedBy}</p>
                   <p className="font-bold">{selectedRepair.staff?.full_name || "N/A"}</p>
