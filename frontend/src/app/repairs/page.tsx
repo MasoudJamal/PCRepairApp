@@ -303,7 +303,10 @@ export default function RepairsPage() {
                   <p className="font-bold">{selectedRepair.staff?.full_name || "N/A"}</p>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg flex items-center gap-2 font-bold transition-all">
+                  <button 
+                    onClick={() => router.push(`/repairs/${selectedRepair.id}/intake-summary`)} 
+                    className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg flex items-center gap-2 font-bold transition-all"
+                  >
                     <Printer className="w-4 h-4" /> {t[lang].print}
                   </button>
                   <button onClick={() => setShowModal(false)} className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg font-bold">
