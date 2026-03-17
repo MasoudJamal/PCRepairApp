@@ -19,6 +19,7 @@ type UserRow = {
 const ROLE_LABELS: Record<string, { en: string; fr: string }> = {
   admin: { en: "Admin", fr: "Administrateur" },
   manager: { en: "Manager", fr: "Responsable" },
+  technician: { en: "Technician", fr: "Technicien" },
   employee: { en: "Employee", fr: "Employé" },
   driver: { en: "Driver", fr: "Chauffeur" },
   user: { en: "User", fr: "Utilisateur" },
@@ -27,6 +28,7 @@ const ROLE_LABELS: Record<string, { en: string; fr: string }> = {
 const ROLE_COLORS: Record<string, string> = {
   admin: "#7c3aed",
   manager: "#2563eb",
+  technician: "#06b6d4",
   employee: "#16a34a",
   driver: "#f59e0b",
   user: "#64748b",
