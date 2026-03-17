@@ -204,6 +204,7 @@ export default function RepairsPage() {
               <tr>
                 <th className="p-4">{t[lang].ref}</th>
                 <th className="p-4">{t[lang].cust}</th>
+				<th className="p-4">Showroom</th>
                 <th className="p-4">{t[lang].status}</th>
                 <th className="p-4 text-right">{t[lang].actions}</th>
               </tr>
@@ -216,8 +217,12 @@ export default function RepairsPage() {
                     <div className="font-semibold text-gray-200">{repair.customers?.full_name}</div>
                     <div className="text-xs text-gray-400">{repair.devices?.model}</div>
                   </td>
+                  {/* Added the TD below */}
+                  <td className="p-4 text-xs text-gray-400 font-medium">
+                    {repair.showrooms?.name || "—"}
+                  </td>
                   <td className="p-4">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase">
+                    <span className="text-[10px] ...">
                       {repair.repair_phase}
                     </span>
                   </td>
